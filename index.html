@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Research Agent - Like Perplexity</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #0a0e27;
+            color: #e5e7eb;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background: #111827;
+            border-right: 1px solid #1f2937;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 0.95em;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sidebar-btn:hover {
+            background: #1f2937;
+            color: #e5e7eb;
+        }
+
+        .sidebar-btn.active {
+            background: #1f2937;
+            color: #667eea;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: #1f2937;
+            margin: 20px 0;
+        }
+
+        .history-section {
+            margin-top: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .history-title {
+            font-size: 0.8em;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .history-item {
+            padding: 10px 12px;
+            color: #9ca3af;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-bottom: 6px;
+        }
+
+        .history-item:hover {
+            background: #1f2937;
+            color: #e5e7eb;
+        }
+
+        .upgrade-btn {
+            margin-top: auto;
+            padding: 12px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid #667eea;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .upgrade-btn:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        /* MAIN CONTENT */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #0a0e27;
+            overflow-y: auto;
+        }
+
+        .header {
+            padding: 16px 32px;
+            border-bottom: 1px solid #1f2937;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            font-size: 0.95em;
+            color: #9ca3af;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            background: #1f2937;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .icon-btn:hover {
+            background: #374151;
+            color: #e5e7eb;
+        }
+
+        /* CONTENT */
+        .content {
+            flex: 1;
+            padding: 40px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-section {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .search-title {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #f3f4f6;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .search-subtitle {
+            font-size: 0.95em;
+            color: #9ca3af;
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        /* SEARCH BOX */
+        .search-box {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus-within {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-input {
+            width: 100%;
+            background: none;
+            border: none;
+            color: #f3f4f6;
+            font-size: 1.05em;
+            outline: none;
+            margin-bottom: 20px;
+        }
+
+        .search-input::placeholder {
+            color: #6b7280;
+        }
+
+        /* CONTROLS */
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-item label {
+            font-size: 0.8em;
+            color: #9ca3af;
+        }
+
+        .control-select {
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: #e5e7eb;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-select:hover {
+            background: #4b5563;
+        }
+
+        .control-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-primary:disabled {
+            background: #4b5563;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #1f2937;
+            color: #e5e7eb;
+            border: 1px solid #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #374151;
+        }
+
+        /* RESULTS */
+        .results-section {
+            display: none;
+            width: 100%;
+            max-width: 900px;
+            padding: 40px 0;
+        }
+
+        .results-section.active {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            margin-bottom: 32px;
+        }
+
+        .result-query {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #f3f4f6;
+            margin-bottom: 16px;
+        }
+
+        .result-meta {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+            color: #9ca3af;
+        }
+
+        .meta-item strong {
+            color: #e5e7eb;
+        }
+
+        /* STATS */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: #1f2937;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #374151;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #374151;
+            gap: 0;
+            margin-bottom: 32px;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: #e5e7eb;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        /* TAB CONTENT */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .report {
+            line-height: 1.8;
+            color: #d1d5db;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .report h3 {
+            color: #667eea;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+        }
+
+        .report p {
+            margin-bottom: 16px;
+        }
+
+        /* SOURCES */
+        .sources-list {
+            list-style: none;
+        }
+
+        .source-item {
+            background: #1f2937;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .source-item:hover {
+            background: #374151;
+        }
+
+        .source-title {
+            font-weight: 600;
+            color: #f3f4f6;
+            margin-bottom: 8px;
+        }
+
+        .source-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .source-link:hover {
+            text-decoration: underline;
+        }
+
+        .source-snippet {
+            color: #9ca3af;
+            font-size: 0.9em;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        /* LOADING */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #374151;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            color: #9ca3af;
+        }
+
+        /* ERROR */
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 3px solid #ef4444;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .search-title {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="logo">🔍 AI Research</div>
+
+        <button class="sidebar-btn active">
+            <span>➕</span> New Research
+        </button>
+        <button class="sidebar-btn">
+            <span>💻</span> Computer
+        </button>
+        <button class="sidebar-btn">
+            <span>📦</span> Artifacts
+        </button>
+        <button class="sidebar-btn">
+            <span>⚙️</span> Settings
+        </button>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="history-section">
+            <div class="history-title">Recent Searches</div>
+            <div class="history-item">What is blockchain?</div>
+            <div class="history-item">How does AI work?</div>
+            <div class="history-item">Latest tech trends</div>
+        </div>
+
+        <button class="upgrade-btn">✨ Upgrade to Pro</button>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-title">AI Research Agent</div>
+            <div class="header-icons">
+                <button class="icon-btn">⚙️</button>
+                <button class="icon-btn">👤</button>
+            </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+            <div style="width: 100%;">
+                <!-- SEARCH SECTION -->
+                <div class="search-section" id="searchSection">
+                    <div class="search-title">What do you want to know?</div>
+                    <div class="search-subtitle">Ask anything and get AI-powered research</div>
+
+                    <div class="search-box">
+                        <input
+                            type="text"
+                            class="search-input"
+                            id="queryInput"
+                            placeholder="Ask anything..."
+                            onkeypress="if(event.key==='Enter') performResearch()"
+                        >
+                        <div class="controls">
+                            <div class="control-item">
+                                <label>Research Depth</label>
+                                <select class="control-select" id="depthSelect">
+                                    <option value="quick">Quick</option>
+                                    <option value="standard" selected>Standard</option>
+                                    <option value="deep">Deep</option>
+                                </select>
+                            </div>
+                            <div class="control-item">
+                                <label>Max Searches</label>
+                                <select class="control-select" id="maxSearches">
+                                    <option value="3">3</option>
+                                    <option value="5" selected>5</option>
+                                    <option value="10">10</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="search-actions">
+                            <button class="btn btn-primary" id="searchBtn" onclick="performResearch()">
+                                🔍 Search
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearAll()">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LOADING -->
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p id="loadingText">Researching...</p>
+                </div>
+
+                <!-- RESULTS -->
+                <div class="results-section" id="results">
+                    <div class="result-header">
+                        <div class="result-query" id="resultQuery"></div>
+                        <div class="result-meta">
+                            <div class="meta-item">⏱️ <strong id="resultTime">-</strong></div>
+                            <div class="meta-item">🔍 <strong id="searchCount">0</strong> searches</div>
+                            <div class="meta-item">🔗 <strong id="sourceCount">0</strong> sources</div>
+                        </div>
+                    </div>
+
+                    <!-- STATS -->
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="statSearches">0</div>
+                            <div class="stat-label">Searches</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statSources">0</div>
+                            <div class="stat-label">Sources</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statWords">0</div>
+                            <div class="stat-label">Words</div>
+                        </div>
+                    </div>
+
+                    <!-- TABS -->
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab('report')">📝 Report</button>
+                        <button class="tab-btn" onclick="switchTab('sources')">🔗 Sources</button>
+                        <button class="tab-btn" onclick="switchTab('reasoning')">🧠 Research Process</button>
+                    </div>
+
+                    <!-- REPORT TAB -->
+                    <div class="tab-content active" id="report-tab">
+                        <div class="report" id="reportContent"></div>
+                    </div>
+
+                    <!-- SOURCES TAB -->
+                    <div class="tab-content" id="sources-tab">
+                        <ul class="sources-list" id="sourcesList"></ul>
+                    </div>
+
+                    <!-- REASONING TAB -->
+                    <div class="tab-content" id="reasoning-tab">
+                        <div id="reasoningSteps"></div>
+                    </div>
+
+                    <!-- ERROR -->
+                    <div id="error" class="error" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+
+        async function performResearch() {
+            const query = document.getElementById('queryInput').value.trim();
+            const depth = document.getElementById('depthSelect').value;
+            const maxSearches = parseInt(document.getElementById('maxSearches').value);
+
+            if (!query) {
+                alert('Please enter your research question');
+                return;
+            }
+
+            document.getElementById('searchSection').style.display = 'none';
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('results').classList.remove('active');
+            document.getElementById('searchBtn').disabled = true;
+
+            const startTime = Date.now();
+
+            try {
+                const response = await fetch(`${API_BASE}/research`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, depth, max_searches: maxSearches })
+                });
+
+                if (!response.ok) throw new Error(`Error: ${response.status}`);
+
+                const data = await response.json();
+                const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+
+                displayResults(data, duration);
+            } catch (error) {
+                showError(`Failed: ${error.message}`);
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('searchBtn').disabled = false;
+            }
+        }
+
+        function displayResults(data, duration) {
+            document.getElementById('resultQuery').textContent = data.query;
+            document.getElementById('resultTime').textContent = `${duration}s`;
+            document.getElementById('searchCount').textContent = data.search_history.length;
+            document.getElementById('sourceCount').textContent = data.sources.length;
+            document.getElementById('statSearches').textContent = data.search_history.length;
+            document.getElementById('statSources').textContent = data.sources.length;
+            document.getElementById('statWords').textContent = data.report.split(/\s+/).length;
+
+            document.getElementById('reportContent').innerHTML = markdownToHtml(data.report);
+
+            document.getElementById('sourcesList').innerHTML = data.sources.map((s, i) => `
+                <li class="source-item">
+                    <div class="source-title">${i + 1}. ${s.title || 'Source'}</div>
+                    ${s.link ? `<a class="source-link" href="${s.link}" target="_blank">View →</a>` : ''}
+                    ${s.snippet ? `<div class="source-snippet">${s.snippet}</div>` : ''}
+                </li>
+            `).join('');
+
+            document.getElementById('reasoningSteps').innerHTML = data.reasoning_steps.map(step => `
+                <div style="background: #1f2937; padding: 16px; margin-bottom: 12px; border-radius: 8px;">
+                    <strong style="color: #667eea;">📍 ${step.step}</strong>
+                    <div style="color: #9ca3af; margin-top: 8px; font-size: 0.9em;">${JSON.stringify(step, null, 2)}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('results').classList.add('active');
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function markdownToHtml(md) {
+            let html = md
+                .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
+                .replace(/^## (.*?)$/gm, '<h3>$1</h3>')
+                .replace(/^# (.*?)$/gm, '<h3>$1</h3>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+            return `<p>${html}</p>`;
+        }
+
+        function clearAll() {
+            document.getElementById('queryInput').value = '';
+            document.getElementById('searchSection').style.display = 'block';
+            document.getElementById('results').classList.remove('active');
+        }
+
+        function showError(msg) {
+            document.getElementById('error').textContent = msg;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('results').classList.add('active');
+        }
+    </script>
+</body>
+</html>
