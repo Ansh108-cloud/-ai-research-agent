@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Research Agent - Deep Research Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .search-box {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .control-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .control-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .results-section {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .results-section.active {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .result-header h2 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .meta-info {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .meta-item strong {
+            color: #333;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .report {
+            line-height: 1.8;
+            color: #333;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 15px;
+        }
+
+        .report h3 {
+            color: #667eea;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .report p {
+            margin-bottom: 15px;
+        }
+
+        .sources-list {
+            list-style: none;
+        }
+
+        .source-item {
+            background: #f9f9f9;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .source-item a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .source-item a:hover {
+            text-decoration: underline;
+        }
+
+        .source-snippet {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .reasoning-step {
+            background: #f0f0f0;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .reasoning-step strong {
+            color: #667eea;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .error {
+            background: #ffe0e0;
+            color: #d32f2f;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #d32f2f;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .search-box {
+                padding: 20px;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .control-group {
+                min-width: 100%;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🔍 AI Research Agent</h1>
+            <p>Like Deep Research - Built with Free APIs & Python</p>
+        </div>
+
+        <!-- Search Box -->
+        <div class="search-box">
+            <input 
+                type="text" 
+                id="queryInput" 
+                placeholder="Ask anything... 'What are the latest AI developments in 2026?' or 'How does quantum computing work?'"
+            >
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label for="depthSelect">Research Depth</label>
+                    <select id="depthSelect">
+                        <option value="quick">Quick (2-3 searches)</option>
+                        <option value="standard" selected>Standard (5-7 searches)</option>
+                        <option value="deep">Deep (10+ searches)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="maxSearches">Max Searches</label>
+                    <select id="maxSearches">
+                        <option value="3">3</option>
+                        <option value="5" selected>5</option>
+                        <option value="10">10</option>
+                        <option value="15">15</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="buttons">
+                <button class="btn btn-primary" id="searchBtn" onclick="performResearch()">
+                    Start Research
+                </button>
+                <button class="btn btn-secondary" id="clearBtn" onclick="clearResults()">
+                    Clear
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p id="loadingText">Analyzing your query and planning research...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="results">
+            <div class="result-header">
+                <h2 id="resultQuery"></h2>
+                <div class="meta-info">
+                    <div class="meta-item">
+                        <span>⏱️</span>
+                        <span><strong>Time:</strong> <span id="resultTime">-</span></span>
+                    </div>
+                    <div class="meta-item">
+                        <span>🔗</span>
+                        <span><strong>Sources:</strong> <span id="sourceCount">0</span></span>
+                    </div>
+                    <div class="meta-item">
+                        <span>📊</span>
+                        <span><strong>Searches:</strong> <span id="searchCount">0</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="statSearches">0</div>
+                    <div class="stat-label">Searches Performed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statSources">0</div>
+                    <div class="stat-label">Sources Found</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statWords">0</div>
+                    <div class="stat-label">Report Words</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('report')">📝 Report</button>
+                <button class="tab-btn" onclick="switchTab('sources')">🔗 Sources</button>
+                <button class="tab-btn" onclick="switchTab('reasoning')">🧠 Reasoning</button>
+            </div>
+
+            <!-- Report Tab -->
+            <div class="tab-content active" id="report-tab">
+                <div class="report" id="reportContent"></div>
+            </div>
+
+            <!-- Sources Tab -->
+            <div class="tab-content" id="sources-tab">
+                <ul class="sources-list" id="sourcesList"></ul>
+            </div>
+
+            <!-- Reasoning Tab -->
+            <div class="tab-content" id="reasoning-tab">
+                <div id="reasoningSteps"></div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="error" class="error" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        async function performResearch() {
+            const query = document.getElementById('queryInput').value.trim();
+            const depth = document.getElementById('depthSelect').value;
+            const maxSearches = parseInt(document.getElementById('maxSearches').value);
+
+            if (!query) {
+                alert('Please enter a research query');
+                return;
+            }
+
+            // Show loading, hide results
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('results').classList.remove('active');
+            document.getElementById('error').style.display = 'none';
+
+            const startTime = Date.now();
+
+            try {
+                const response = await fetch(`${API_BASE}/research`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        depth: depth,
+                        max_searches: maxSearches
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const endTime = Date.now();
+                const duration = ((endTime - startTime) / 1000).toFixed(1);
+
+                // Display results
+                displayResults(data, duration);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`Error: ${error.message}`);
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+            }
+        }
+
+        function displayResults(data, duration) {
+            // Update header
+            document.getElementById('resultQuery').textContent = data.query;
+            document.getElementById('resultTime').textContent = `${duration}s`;
+            document.getElementById('sourceCount').textContent = data.sources.length;
+            document.getElementById('searchCount').textContent = data.search_history.length;
+
+            // Update stats
+            document.getElementById('statSearches').textContent = data.search_history.length;
+            document.getElementById('statSources').textContent = data.sources.length;
+            document.getElementById('statWords').textContent = data.report.split(/\s+/).length;
+
+            // Display report
+            const reportContent = document.getElementById('reportContent');
+            reportContent.innerHTML = markdownToHtml(data.report);
+
+            // Display sources
+            const sourcesList = document.getElementById('sourcesList');
+            sourcesList.innerHTML = data.sources.map((source, index) => `
+                <li class="source-item">
+                    <strong>${index + 1}. ${source.title || 'Untitled'}</strong>
+                    ${source.link ? `<a href="${source.link}" target="_blank">View Source</a>` : ''}
+                    ${source.snippet ? `<div class="source-snippet">${source.snippet}</div>` : ''}
+                </li>
+            `).join('');
+
+            // Display reasoning steps
+            const reasoningSteps = document.getElementById('reasoningSteps');
+            reasoningSteps.innerHTML = data.reasoning_steps.map(step => `
+                <div class="reasoning-step">
+                    <strong>📍 Step: ${step.step}</strong>
+                    <div>${JSON.stringify(step, null, 2).split('\n').slice(1, -1).join('\n')}</div>
+                </div>
+            `).join('');
+
+            // Show results section
+            document.getElementById('results').classList.add('active');
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function markdownToHtml(markdown) {
+            let html = markdown
+                .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
+                .replace(/^## (.*?)$/gm, '<h2>$1</h2>')
+                .replace(/^# (.*?)$/gm, '<h1>$1</h1>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/^/gm, '')
+                .replace(/$/gm, '');
+            return `<p>${html}</p>`;
+        }
+
+        function clearResults() {
+            document.getElementById('queryInput').value = '';
+            document.getElementById('results').classList.remove('active');
+            document.getElementById('error').style.display = 'none';
+        }
+
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('results').classList.add('active');
+        }
+
+        // Allow Enter key to search
+        document.getElementById('queryInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performResearch();
+            }
+        });
+    </script>
+</body>
+</html>
