@@ -5,6 +5,8 @@ Zero cost, open-source setup
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
@@ -13,6 +15,7 @@ from datetime import datetime
 import requests
 from duckduckgo_search import DDGS
 from typing import Optional
+from pathlib import Path
 
 # Load environment variables
 load_dotenv()
@@ -294,7 +297,24 @@ Format it nicely with markdown."""
 
 @app.get("/")
 async def root():
-    """Health check endpoint"""
+    """Serve the HTML frontend"""
+    index_path = Path(__file__).parent / "index.html"
+    
+    # If index.html exists, serve it
+    if index_path.exists():
+        return FileResponse(str(index_path), media_type="text/html")
+    
+    # Fallback: return status
+    return {
+        "status": "running",
+        "service": "AI Research Agent",
+        "version": "1.0",
+        "llm_available": client is not None
+    }
+
+@app.get("/api/status")
+async def status():
+    """API status endpoint"""
     return {
         "status": "running",
         "service": "AI Research Agent",
