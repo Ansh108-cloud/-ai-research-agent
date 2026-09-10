@@ -109,15 +109,17 @@ Respond in JSON format:
     "key_areas_to_cover": ["area 1", "area 2"]
 }}"""
 
-        response = self.client.messages.create(
-            model="mixtral-8x7b-32768",
+        # ✅ FIXED: Using correct Groq/OpenAI syntax
+        response = self.client.chat.completions.create(
+            model="openai/gpt-oss-120b",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
             max_tokens=1000
         )
         
         try:
-            plan = json.loads(response.content[0].text)
+            # ✅ FIXED: Correct response parsing
+            plan = json.loads(response.choices[0].message.content)
             return plan
         except:
             return {
@@ -158,20 +160,22 @@ Provide analysis in JSON:
 {{
     "key_insights": ["insight 1", "insight 2"],
     "information_gaps": ["gap 1", "gap 2"],
-    "needs_further_research": true/false,
-    "confidence_level": 0.0-1.0,
+    "needs_further_research": true,
+    "confidence_level": 0.0,
     "suggested_followup_searches": ["search 1", "search 2"]
 }}"""
 
-        response = self.client.messages.create(
-            model="mixtral-8x7b-32768",
+        # ✅ FIXED: Using correct Groq/OpenAI syntax
+        response = self.client.chat.completions.create(
+            model="openai/gpt-oss-120b",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
             max_tokens=1000
         )
         
         try:
-            analysis = json.loads(response.content[0].text)
+            # ✅ FIXED: Correct response parsing
+            analysis = json.loads(response.choices[0].message.content)
             return analysis
         except:
             return {
@@ -209,14 +213,16 @@ Create a professional report with:
 
 Format it nicely with markdown."""
 
-        response = self.client.messages.create(
-            model="mixtral-8x7b-32768",
+        # ✅ FIXED: Using correct Groq/OpenAI syntax
+        response = self.client.chat.completions.create(
+            model="openai/gpt-oss-120b",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.5,
             max_tokens=2000
         )
         
-        return response.content[0].text
+        # ✅ FIXED: Correct response parsing
+        return response.choices[0].message.content
     
     def research(self, query: str, max_searches: int = 5) -> dict:
         """
@@ -327,7 +333,6 @@ async def status():
 async def research(request: ResearchRequest):
     """
     Main research endpoint
-    Takes a query and returns a comprehensive research report
     """
     
     if not client:
@@ -386,6 +391,6 @@ if __name__ == "__main__":
     uvicorn.run(
         app,
         host="0.0.0.0",
-        port=8000,
-        reload=True
+        port=int(os.environ.get("PORT", 8000)),  # ✅ FIXED: Render port
+        reload=False  # ✅ FIXED: False for production
     )
